@@ -33,31 +33,37 @@ This project is a web scraper for [OpenParliament.ca](https://openparliament.ca)
 ## Steps
 Clone the repository:
 
+```bash
 git clone https://github.com/your-username/OpenParliamentWebscraper.git
 cd OpenParliamentWebscraper
 
 Set up a virtual environment:
-
+```bash
 python3 -m venv venv
 source venv/bin/activate
+```
 
 Install dependencies:
-
+```bash
 pip install -r requirements.txt
+```
 
 Verify your installation:
 Ensure chromium-browser and chromedriver are installed:
 
+```bash
 chromium-browser --version
 chromedriver --version
+```
 
 Confirm that chromedriver is in /usr/bin/chromedriver
 
 ## Running the Script
 To run the scraper:
 
+```bash
 python OpenParliamentWebscraper.py
-
+```
 ## Example Output:
 
 The script generates 2 JSON files (bills_list.json), (bill_details.json) with the following structure:
