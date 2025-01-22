@@ -1,0 +1,14 @@
+# Python virtual environment
+venv/
+__pycache__/
+
+# macOS metadata
+.DS_Store
+
+# Logs and caches
+*.log
+*.cache
+
+# IDE-specific files
+.vscode/
+.idea/
