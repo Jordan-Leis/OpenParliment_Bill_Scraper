@@ -16,18 +16,14 @@ def get_chromedriver():
     return driver
 
 def scrape_bills_list(driver):
-    """Scrape the main bills page."""
+    """Scrape the main bills page and collect basic info."""
     base_url = "https://openparliament.ca"
     driver.get(base_url + "/bills/")
     time.sleep(2)  # Allow page to load
 
-    # Get page source and parse with BeautifulSoup
     soup = BeautifulSoup(driver.page_source, "html.parser")
-    
-    # Find all bill containers
     bill_divs = soup.select("div.column.column-block.twoline.overflowtip")
 
-    # Extract bill data
     bills = []
     for div in bill_divs:
         a_tag = div.find("a")
@@ -48,11 +44,11 @@ def scrape_bills_list(driver):
     return bills
 
 def scrape_bill_details(bill):
-    """Scrape detailed information for a single bill."""
+    """Scrape detailed information for a single bill, including status."""
     driver = get_chromedriver()
     try:
         driver.get(bill["url"])
-        time.sleep(2)  # Allow page to load
+        time.sleep(3)  # Allow page to load completely
         soup = BeautifulSoup(driver.page_source, "html.parser")
 
         # Extract subtitle
@@ -62,6 +58,18 @@ def scrape_bill_details(bill):
         # Extract summary
         summary_tag = soup.select_one("div.bill_summary p")
         bill["summary"] = summary_tag.text.strip() if summary_tag else "No summary available"
+
+        # ✅ Extracting Status
+        status_div = soup.find("h2", string="Status")
+        if status_div:
+            status_p = status_div.find_next("div", class_="main-col").find("p")
+            if status_p:
+                bill["status"] = status_p.text.strip()
+            else:
+                bill["status"] = "Unknown (Status header found, but no text)"
+        else:
+            bill["status"] = "Unknown (No 'Status' section found)"
+
     finally:
         driver.quit()
 
@@ -75,16 +83,14 @@ def save_to_json(data, filename):
 if __name__ == "__main__":
     driver = get_chromedriver()
     try:
-        # Step 1: Scrape the list of bills
         bills = scrape_bills_list(driver)
         print(f"Scraped {len(bills)} bills from the main page.")
 
-        # Step 2: Scrape detailed info for each bill in parallel
-        with ThreadPoolExecutor(max_workers=4) as executor:  # Reduced to 4 threads
+        # ✅ Multi-threaded processing for faster scraping (keep around 4 threads)
+        with ThreadPoolExecutor(max_workers=4) as executor:
             detailed_bills = list(executor.map(scrape_bill_details, bills))
 
-        # Step 3: Save the detailed bills to a JSON file
         save_to_json(detailed_bills, "detailed_bills.json")
-        print("Saved detailed bill data to 'detailed_bills.json'.")
+        print("✅ Successfully saved data to 'detailed_bills.json'.")
     finally:
         driver.quit()
